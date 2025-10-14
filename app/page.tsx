@@ -75,9 +75,11 @@ export default function Home() {
 
     const loadData = async () => {
         try {
+            // Use relative paths that work with basePath
+            const basePath = process.env.NODE_ENV === 'production' ? '/iitsec_refer' : ''
             const [papersResponse, mappingResponse] = await Promise.all([
-                fetch('/all_papers_merged.json'),
-                fetch('/papers_by_persona.json')
+                fetch(`${basePath}/all_papers_merged.json`),
+                fetch(`${basePath}/papers_by_persona.json`)
             ])
 
             const papers = await papersResponse.json()
