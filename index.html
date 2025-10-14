@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I/ITSEC 2025 - Personalized Paper Recommendations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .content-area {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            min-height: 500px;
+        }
+
+        /* Persona Selection */
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .persona-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .persona-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .persona-card.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .persona-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .persona-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        /* Back Button */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background: #764ba2;
+            transform: translateX(-5px);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-button {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .filter-button:hover {
+            background: #f0f4ff;
+        }
+
+        .filter-button.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .relevance-filter {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Papers List */
+        .papers-header {
+            margin-bottom: 20px;
+        }
+
+        .selected-persona-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .selected-persona-info h2 {
+            margin-bottom: 8px;
+        }
+
+        .paper-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .paper-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .paper-card.conflict {
+            border-left-color: #ff6b6b;
+            background: #fff5f5;
+        }
+
+        .conflict-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff6b6b;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .paper-time {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: #666;
+            flex-wrap: wrap;
+        }
+
+        .time-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+        }
+
+        .paper-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .paper-session {
+            font-size: 1rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .paper-details {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .detail-badge {
+            background: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .relevance-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .relevance-label {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .relevance-high {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .relevance-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .relevance-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .relevance-rationale {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+            font-style: italic;
+        }
+
+        .no-papers {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .no-papers-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .persona-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>I/ITSEC 2025</h1>
+            <p class="subtitle">Personalized Paper Recommendations</p>
+        </header>
+
+        <div class="content-area" id="contentArea">
+            <div class="loading">Loading data...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global data storage
+        let personas = [];
+        let allPapers = {};
+        let papersByPersona = [];
+        let selectedPersona = null;
+        let selectedDay = 'all';
+        let selectedRelevance = 'all';
+
+        // Load all data on page load
+        async function loadData() {
+            try {
+                // Load all three files
+                const [personasResponse, papersResponse, mappingResponse] = await Promise.all([
+                    fetch('Personas.md'),
+                    fetch('all_papers_merged.json'),
+                    fetch('papers_by_persona.json')
+                ]);
+
+                const personasText = await personasResponse.text();
+                allPapers = await papersResponse.json();
+                papersByPersona = await mappingResponse.json();
+
+                // Parse personas from markdown
+                personas = parsePersonas(personasText);
+
+                // Initialize the app
+                showPersonaSelection();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('contentArea').innerHTML =
+                    '<div class="no-papers"><div class="no-papers-icon">⚠️</div><h2>Error loading data</h2><p>Please make sure all required files are present.</p></div>';
+            }
+        }
+
+        // Parse personas from markdown
+        function parsePersonas(text) {
+            const lines = text.split('\n');
+            const personaList = [];
+            let currentPersona = null;
+
+            for (let line of lines) {
+                if (line.startsWith('Title:')) {
+                    if (currentPersona) {
+                        personaList.push(currentPersona);
+                    }
+                    currentPersona = {
+                        title: line.replace('Title:', '').trim(),
+                        description: ''
+                    };
+                } else if (line.startsWith('Description:') && currentPersona) {
+                    currentPersona.description = line.replace('Description:', '').trim();
+                }
+            }
+
+            if (currentPersona) {
+                personaList.push(currentPersona);
+            }
+
+            // Remove duplicates based on title
+            const uniquePersonas = [];
+            const seenTitles = new Set();
+
+            for (let persona of personaList) {
+                if (!seenTitles.has(persona.title)) {
+                    seenTitles.add(persona.title);
+                    uniquePersonas.push(persona);
+                }
+            }
+
+            return uniquePersonas;
+        }
+
+        // Show persona selection screen
+        function showPersonaSelection() {
+            const html = `
+                <h2>Choose Your Persona</h2>
+                <p style="color: #666; margin-bottom: 20px;">Select the persona that best describes you to get personalized paper recommendations.</p>
+                <div class="persona-grid">
+                    ${personas.map((persona, index) => `
+                        <div class="persona-card" onclick="selectPersona(${index})">
+                            <div class="persona-title">${persona.title}</div>
+                            <div class="persona-description">${persona.description}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('contentArea').innerHTML = html;
+        }
+
+        // Select a persona and show their papers
+        function selectPersona(index) {
+            selectedPersona = personas[index];
+            selectedDay = 'all';
+            selectedRelevance = 'all';
+            showPapers();
+        }
+
+        // Get papers for selected persona
+        function getPersonaPapers() {
+            const personaData = papersByPersona.find(p => {
+                const normalized = p.Persona.toLowerCase().replace(/[–-]/g, '-').trim();
+                const targetNormalized = selectedPersona.title.toLowerCase().replace(/[–-]/g, '-').trim();
+                return normalized === targetNormalized ||
+                    normalized.includes(targetNormalized) ||
+                    targetNormalized.includes(normalized);
+            });
+
+            if (!personaData) {
+                return [];
+            }
+
+            const papers = [];
+
+            // Add high relevance papers
+            if (personaData.High_Relevance_Papers) {
+                personaData.High_Relevance_Papers.forEach(paperId => {
+                    if (allPapers[paperId]) {
+                        papers.push({
+                            ...allPapers[paperId],
+                            relevance: 'High',
+                            paperId: paperId
+                        });
+                    }
+                });
+            }
+
+            // Add medium relevance papers
+            if (personaData.Medium_Relevance_Papers) {
+                personaData.Medium_Relevance_Papers.forEach(paperId => {
+                    if (allPapers[paperId]) {
+                        papers.push({
+                            ...allPapers[paperId],
+                            relevance: 'Medium',
+                            paperId: paperId
+                        });
+                    }
+                });
+            }
+
+            // Add low relevance papers
+            if (personaData.Low_Relevance_Papers) {
+                personaData.Low_Relevance_Papers.forEach(paperId => {
+                    if (allPapers[paperId]) {
+                        papers.push({
+                            ...allPapers[paperId],
+                            relevance: 'Low',
+                            paperId: paperId
+                        });
+                    }
+                });
+            }
+
+            return papers;
+        }
+
+        // Parse date and time for sorting
+        function parseDateTime(dateStr, timeStr) {
+            if (!dateStr || !timeStr) return new Date(0);
+
+            // Parse date (format: MM/DD/YY)
+            const [month, day, year] = dateStr.split('/');
+
+            // Parse time (format: H:MM AM/PM)
+            const timeParts = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!timeParts) return new Date(0);
+
+            let hours = parseInt(timeParts[1]);
+            const minutes = parseInt(timeParts[2]);
+            const period = timeParts[3].toUpperCase();
+
+            if (period === 'PM' && hours !== 12) hours += 12;
+            if (period === 'AM' && hours === 12) hours = 0;
+
+            return new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day), hours, minutes);
+        }
+
+        // Detect time conflicts
+        function detectConflicts(papers) {
+            const timeSlots = new Map();
+
+            papers.forEach(paper => {
+                const sessionInfo = paper.Session_Info;
+                const key = `${sessionInfo.Session_Day}_${sessionInfo.Presentation_Start}_${sessionInfo.Presentation_End}`;
+
+                if (!timeSlots.has(key)) {
+                    timeSlots.set(key, []);
+                }
+                timeSlots.get(key).push(paper.paperId);
+            });
+
+            const conflicts = new Set();
+            timeSlots.forEach((paperIds) => {
+                if (paperIds.length > 1) {
+                    paperIds.forEach(id => conflicts.add(id));
+                }
+            });
+
+            return conflicts;
+        }
+
+        // Show papers for selected persona
+        function showPapers() {
+            let papers = getPersonaPapers();
+
+            // Filter by relevance
+            if (selectedRelevance !== 'all') {
+                papers = papers.filter(p => p.relevance.toLowerCase() === selectedRelevance.toLowerCase());
+            }
+
+            // Filter by day
+            if (selectedDay !== 'all') {
+                papers = papers.filter(p => {
+                    const sessionDate = p.Session_Info.Session_Day;
+                    return sessionDate && sessionDate.includes(selectedDay);
+                });
+            }
+
+            // Sort by date and time
+            papers.sort((a, b) => {
+                const dateA = parseDateTime(a.Session_Info.Session_Day, a.Session_Info.Presentation_Start);
+                const dateB = parseDateTime(b.Session_Info.Session_Day, b.Session_Info.Presentation_Start);
+                return dateA - dateB;
+            });
+
+            // Detect conflicts
+            const conflicts = detectConflicts(papers);
+
+            // Get stats
+            const uniqueDays = new Set(papers.map(p => p.Session_Info.Session_Day).filter(d => d));
+            const conflictCount = conflicts.size;
+
+            const html = `
+                <button class="back-button" onclick="showPersonaSelection()">
+                    ← Back to Personas
+                </button>
+
+                <div class="selected-persona-info">
+                    <h2>${selectedPersona.title}</h2>
+                    <p>${selectedPersona.description}</p>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">${papers.length}</div>
+                        <div class="stat-label">Recommended Papers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${uniqueDays.size}</div>
+                        <div class="stat-label">Conference Days</div>
+                    </div>
+                    ${conflictCount > 0 ? `
+                        <div class="stat-card" style="border-left-color: #ff6b6b;">
+                            <div class="stat-number" style="color: #ff6b6b;">${conflictCount}</div>
+                            <div class="stat-label">Scheduling Conflicts</div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <span class="filter-label">Filter by Day:</span>
+                        <button class="filter-button ${selectedDay === 'all' ? 'active' : ''}" onclick="filterByDay('all')">All Days</button>
+                        <button class="filter-button ${selectedDay === '12/01' ? 'active' : ''}" onclick="filterByDay('12/01')">Dec 1</button>
+                        <button class="filter-button ${selectedDay === '12/02' ? 'active' : ''}" onclick="filterByDay('12/02')">Dec 2</button>
+                        <button class="filter-button ${selectedDay === '12/03' ? 'active' : ''}" onclick="filterByDay('12/03')">Dec 3</button>
+                        <button class="filter-button ${selectedDay === '12/04' ? 'active' : ''}" onclick="filterByDay('12/04')">Dec 4</button>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <span class="filter-label">Relevance:</span>
+                        <button class="filter-button ${selectedRelevance === 'all' ? 'active' : ''}" onclick="filterByRelevance('all')">All</button>
+                        <button class="filter-button ${selectedRelevance === 'high' ? 'active' : ''}" onclick="filterByRelevance('high')">High</button>
+                        <button class="filter-button ${selectedRelevance === 'medium' ? 'active' : ''}" onclick="filterByRelevance('medium')">Medium</button>
+                        <button class="filter-button ${selectedRelevance === 'low' ? 'active' : ''}" onclick="filterByRelevance('low')">Low</button>
+                    </div>
+                </div>
+
+                <div class="papers-list">
+                    ${papers.length > 0 ? papers.map(paper => renderPaper(paper, conflicts)).join('') :
+                    '<div class="no-papers"><div class="no-papers-icon">📄</div><h3>No papers found</h3><p>Try adjusting your filters.</p></div>'
+                }
+                </div>
+            `;
+
+            document.getElementById('contentArea').innerHTML = html;
+        }
+
+        // Render a single paper card
+        function renderPaper(paper, conflicts) {
+            const sessionInfo = paper.Session_Info;
+            const paperInfo = paper.Paper_Info;
+            const personaAnalysis = paper.Persona_Analysis;
+            const isConflict = conflicts.has(paper.paperId);
+
+            // Find the relevance rationale for this specific persona
+            let rationale = '';
+            if (personaAnalysis && personaAnalysis.Relevant_Personas) {
+                const personaMatch = personaAnalysis.Relevant_Personas.find(p => {
+                    const normalized = p.Persona.toLowerCase().replace(/[–-]/g, '-').trim();
+                    const targetNormalized = selectedPersona.title.toLowerCase().replace(/[–-]/g, '-').trim();
+                    return normalized === targetNormalized ||
+                        normalized.includes(targetNormalized) ||
+                        targetNormalized.includes(normalized);
+                });
+
+                if (personaMatch) {
+                    rationale = personaMatch.Rationale;
+                }
+            }
+
+            return `
+                <div class="paper-card ${isConflict ? 'conflict' : ''}">
+                    ${isConflict ? '<div class="conflict-badge">⚠️ Time Conflict</div>' : ''}
+                    
+                    <div class="paper-time">
+                        <span class="time-badge">📅 ${sessionInfo.Session_Day || 'TBD'}</span>
+                        <span class="time-badge">🕐 ${sessionInfo.Presentation_Start || 'TBD'} - ${sessionInfo.Presentation_End || 'TBD'}</span>
+                        ${sessionInfo.Session_Room ? `<span class="time-badge">📍 Room ${sessionInfo.Session_Room}</span>` : ''}
+                    </div>
+
+                    <div class="paper-title">${paperInfo.Title}</div>
+                    
+                    <div class="paper-session">
+                        ${sessionInfo.Session_Title || 'Session TBD'}
+                    </div>
+
+                    <div class="paper-details">
+                        ${sessionInfo.Session_Track ? `<span class="detail-badge">🏷️ ${sessionInfo.Session_Track}</span>` : ''}
+                        ${sessionInfo.Session_Type ? `<span class="detail-badge">📋 ${sessionInfo.Session_Type}</span>` : ''}
+                        ${paperInfo.First_Name && paperInfo.Last_Name ? `<span class="detail-badge">👤 ${paperInfo.First_Name} ${paperInfo.Last_Name}</span>` : ''}
+                    </div>
+
+                    ${rationale ? `
+                        <div class="relevance-section">
+                            <div class="relevance-label relevance-${paper.relevance.toLowerCase()}">
+                                ${paper.relevance} Relevance
+                            </div>
+                            <div class="relevance-rationale">
+                                "${rationale}"
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Filter papers by day
+        function filterByDay(day) {
+            selectedDay = day;
+            showPapers();
+        }
+
+        // Filter papers by relevance
+        function filterByRelevance(relevance) {
+            selectedRelevance = relevance;
+            showPapers();
+        }
+
+        // Initialize app when page loads
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>
